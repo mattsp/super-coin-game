@@ -13,6 +13,7 @@ export default class PlayerBuilder extends Phaser.Sprite {
     private _jumps: number = 2;
     private _jumping: boolean = false;
     private _jumpingTime: number = 0;
+
     constructor(game: Phaser.Game, x: number, y: number) {
         super(game, x, y, Assets.Spritesheets.SpritesheetsPlayer20205.getName(), 0);
         game.physics.arcade.enable(this);

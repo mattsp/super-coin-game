@@ -1,3 +1,4 @@
+import { store } from './../store';
 import * as Assets from '../assets';
 
 export default class Menu extends Phaser.State {
@@ -60,11 +61,11 @@ export default class Menu extends Phaser.State {
     }
 
     private _loadBestScore(): void {
-        if (localStorage.getItem('bestScore') === undefined) {
+        if (!localStorage.getItem('bestScore')) {
             localStorage.setItem('bestScore', '0');
-        } else if (this.game['global'].score > localStorage.getItem('bestScore')) {
+        } else if (store.score > Number(localStorage.getItem('bestScore'))) {
             localStorage.setItem('bestScore', this.game['global'].score);
-            this.game['global'].score = 0;
+            store.score = 0;
         }
     }
 
