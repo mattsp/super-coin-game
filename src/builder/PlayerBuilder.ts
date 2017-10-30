@@ -105,7 +105,7 @@ export default class PlayerBuilder extends Phaser.Sprite {
         // If the right arrow key is pressed
         else if (this._cursor.right.isDown === true || this._wqzd.right.isDown === true || this._moveRight === true) {
             // Move the player to the right
-            this.body.velocity.x = 320;
+            this.body.velocity.x = 200;
             this.animations.play('right');
         }
         // If neither the right or left arrow key is pressed
