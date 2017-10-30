@@ -1,5 +1,7 @@
 import * as Assets from '../assets';
 
+import { store } from '../store';
+
 export default class Menu extends Phaser.State {
 
     private _muteButton: Phaser.Button;
@@ -21,7 +23,7 @@ export default class Menu extends Phaser.State {
             .easing(Phaser.Easing.Bounce.Out).start();
 
         this._loadBestScore();
-        const scoreText = 'score: ' + this.game['global'].score + '\nbest score: ' +
+        const scoreText = 'score: ' + store.score + '\nbest score: ' +
             localStorage.getItem('bestScore');
 
         // Show the score at the center of the screen
@@ -62,9 +64,9 @@ export default class Menu extends Phaser.State {
     private _loadBestScore(): void {
         if (localStorage.getItem('bestScore') === undefined) {
             localStorage.setItem('bestScore', '0');
-        } else if (this.game['global'].score > localStorage.getItem('bestScore')) {
-            localStorage.setItem('bestScore', this.game['global'].score);
-            this.game['global'].score = 0;
+        } else if (store.score > Number(localStorage.getItem('bestScore'))) {
+            localStorage.setItem('bestScore', store.score.toString());
+            store.score = 0;
         }
     }
 

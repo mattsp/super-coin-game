@@ -26,6 +26,7 @@ module.exports = {
         }),
         new webpack.DefinePlugin({
             'DEBUG': false,
+            "SOCKET_URI": 'ws://10.150.136.126:4001',
 
             // Do not modify these manually, you may break things...
             'DEFAULT_GAME_WIDTH': /*[[DEFAULT_GAME_WIDTH*/800/*DEFAULT_GAME_WIDTH]]*/,

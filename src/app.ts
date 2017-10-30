@@ -21,6 +21,7 @@ class App extends Phaser.Game {
         this.state.add('game', Game);
 
         this.state.start('boot');
+
     }
 }
 

@@ -25,6 +25,7 @@ module.exports = {
         }),
         new webpack.DefinePlugin({
             'DEBUG': true,
+            "SOCKET_URI": JSON.stringify('ws://10.150.136.126:4001'),
 
             // Do not modify these manually, you may break things...
             'DEFAULT_GAME_WIDTH': /*[[DEFAULT_GAME_WIDTH*/800/*DEFAULT_GAME_WIDTH]]*/,
@@ -32,7 +33,6 @@ module.exports = {
             'MAX_GAME_WIDTH': /*[[MAX_GAME_WIDTH*/888/*MAX_GAME_WIDTH]]*/,
             'MAX_GAME_HEIGHT': /*[[MAX_GAME_HEIGHT*/600/*MAX_GAME_HEIGHT]]*/,
             'SCALE_MODE': JSON.stringify(/*[[SCALE_MODE*/'SHOW_ALL'/*SCALE_MODE]]*/),
-
             // The items below most likely the ones you should be modifying
             'GOOGLE_WEB_FONTS': JSON.stringify([ // Add or remove entries in this array to change which fonts are loaded
                 'Barrio'
@@ -52,6 +52,8 @@ module.exports = {
     devServer: {
         contentBase: path.join(__dirname, 'dist'),
         compress: true,
+        host: '0.0.0.0',
+        disableHostCheck: true,
         port: 9000,
         inline: true,
         watchOptions: {

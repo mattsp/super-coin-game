@@ -14,6 +14,7 @@ export default class Boot extends Phaser.State {
         // this.input.maxPointers = 1;
 
         this.game.scale.scaleMode = Phaser.ScaleManager[SCALE_MODE];
+        this.game.scale.refresh();
 
         if (SCALE_MODE === 'USER_SCALE') {
             let screenMetrics: Utils.ScreenMetrics = Utils.ScreenUtils.screenMetrics;
@@ -21,27 +22,17 @@ export default class Boot extends Phaser.State {
             this.game.scale.setUserScale(screenMetrics.scaleX, screenMetrics.scaleY);
         }
 
-        this.game['global'] = {
-            score: 0
-        };
-
-
-
         this.game.renderer.renderSession.roundPixels = true;
         this.game.stage.backgroundColor = '#3498db';
-
+        // this.game.time.advancedTiming = true;
+        // this.game.time.desiredFps = 60;
+        this.stage.disableVisibilityChange = true;
+        this.game.scale.pageAlignHorizontally = true;
+        this.game.scale.pageAlignVertically = true;
         if (this.game.device.desktop) {
             // Any desktop specific stuff here
-            this.game.scale.pageAlignHorizontally = true;
-            this.game.scale.pageAlignVertically = true;
         } else {
             // Any mobile specific stuff here
-            this.game.scale.setMinMax(this.game.width / 2, this.game.height / 2,
-                this.game.width * 2, this.game.height * 2);
-
-            this.game.scale.pageAlignHorizontally = true;
-            this.game.scale.pageAlignVertically = true;
-
             document.body.style.backgroundColor = '#3498db';
 
 
