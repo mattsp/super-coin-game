@@ -16,7 +16,7 @@ export default class EnemiesBuilder extends Phaser.Group {
     public update() {
         if (this.nextEnemy < this.game.time.now) {
             const delay = Math.max(
-                this.START_TIME_FREQ - (this.START_TIME_FREQ - this.END_TIME_FREQ) * store.score / this.SCORE_PROGRESSION, this.END_TIME_FREQ);
+                this.START_TIME_FREQ - (this.START_TIME_FREQ - this.END_TIME_FREQ) * Math.max(store.scorePlayer1, store.scorePlayer2) / this.SCORE_PROGRESSION, this.END_TIME_FREQ);
             this._addEnemy();
             this.nextEnemy = this.game.time.now + delay;
         }
@@ -36,7 +36,7 @@ export default class EnemiesBuilder extends Phaser.Group {
         enemy.body.bounce.x = 1;
         enemy.checkWorldBounds = true;
         enemy.outOfBoundsKill = true;
-        if (store.score < 50) {
+        if (Math.max(store.scorePlayer1, store.scorePlayer2) < 50) {
             enemy.scale.setTo(2, 2);
             enemy.body.velocity.x = 80 * this.game.rnd.pick([-1, 1]);
         } else {

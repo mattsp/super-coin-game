@@ -1,6 +1,9 @@
+import { IDUtils } from './../utils/utils';
 import * as Assets from '../assets';
+import { Direction } from '../enums/direction';
 
 export default class PlayerBuilder extends Phaser.Sprite {
+    private _id: number;
     private _cursor: Phaser.CursorKeys;
     private _jumpSound: Phaser.Sound;
     private _dieSound: Phaser.Sound;
@@ -14,8 +17,12 @@ export default class PlayerBuilder extends Phaser.Sprite {
     private _jumping: boolean = false;
     private _jumpingTime: number = 0;
 
-    constructor(game: Phaser.Game, x: number, y: number) {
+    constructor(game: Phaser.Game, x: number, y: number, color?: number, id?: number) {
         super(game, x, y, Assets.Spritesheets.SpritesheetsPlayer20205.getName(), 0);
+        this._id = id;
+        if (color) {
+            this.tint = color;
+        }
         game.physics.arcade.enable(this);
         this.anchor.setTo(0.5);
         this.body.gravity.y = 250;
@@ -32,79 +39,24 @@ export default class PlayerBuilder extends Phaser.Sprite {
         this._dieSound = this.game.add.audio(Assets.Audio.AudioDead.getName());
         this.animations.add('right', [1, 2], 8, true);
         this.animations.add('left', [3, 4], 8, true);
-        if (this.game.device.desktop === false) {
-            this._addMobileInputs();
-        }
         game.add.existing(this);
     }
-
-    private _addMobileInputs(): void {
-        this._jumpButton = this.game.add.sprite(560, 360, Assets.Images.ImagesJumpButton.getName());
-        this._jumpButton.inputEnabled = true;
-        this._jumpButton.alpha = 0.5;
-        this._jumpButton.scale.setTo(1.6, 1.5);
-        // Add the move left button
-        this._leftButton = this.game.add.sprite(80, 360, Assets.Images.ImagesLeftButton.getName());
-        this._leftButton.inputEnabled = true;
-        this._leftButton.alpha = 0.5;
-        this._leftButton.scale.setTo(1.6, 1.5);
-        // Add the move right button
-        this._rightButton = this.game.add.sprite(208, 360, Assets.Images.ImagesRightButton.getName());
-        this._rightButton.inputEnabled = true;
-        this._rightButton.alpha = 0.5;
-        this._rightButton.scale.setTo(1.6, 1.5);
-
-        this._jumpButton.events.onInputDown.add(this._jump, this);
-
-        this._moveLeft = false;
-        this._moveRight = false;
-
-        this._leftButton.events.onInputOver.add(this._setLeftTrue, this);
-        this._leftButton.events.onInputOut.add(this._setLeftFalse, this);
-        this._leftButton.events.onInputDown.add(this._setLeftTrue, this);
-        this._leftButton.events.onInputUp.add(this._setLeftFalse, this);
-
-        this._rightButton.events.onInputOver.add(this._setRightTrue, this);
-        this._rightButton.events.onInputOut.add(this._setRightFalse, this);
-        this._rightButton.events.onInputDown.add(this._setRightTrue, this);
-        this._rightButton.events.onInputUp.add(this._setRightFalse, this);
-
-
-    }
-
-    private _setLeftTrue(): void {
-        this._moveLeft = true;
-    }
-    private _setLeftFalse(): void {
-        this._moveLeft = false;
-    }
-    private _setRightTrue(): void {
-        this._moveRight = true;
-    }
-    private _setRightFalse(): void {
-        this._moveRight = false;
-    }
-
 
     public scalePlayer(): void {
         this.game.add.tween(this.scale).to({ x: 1.3, y: 1.3 }, 100)
             .yoyo(true).start();
     }
 
-    public move(): void {
-        if (this.game.input.totalActivePointers === 0) {
-            this._moveLeft = false;
-            this._moveRight = false;
-        }
+    public move(direction?: Direction): void {
         // If the left arrow key is pressed
-        if (this._cursor.left.isDown === true || this._wqzd.left.isDown === true || this._moveLeft === true) {
+        if (direction === Direction.Left) {
             // Move the player to the left
             // The velocity is in pixels per second
             this.body.velocity.x = -200;
             this.animations.play('left');
         }
         // If the right arrow key is pressed
-        else if (this._cursor.right.isDown === true || this._wqzd.right.isDown === true || this._moveRight === true) {
+        else if (direction === Direction.Right) {
             // Move the player to the right
             this.body.velocity.x = 200;
             this.animations.play('right');
@@ -112,18 +64,16 @@ export default class PlayerBuilder extends Phaser.Sprite {
         // If neither the right or left arrow key is pressed
         else {
             // Stop the player
-            this.body.velocity.x = 0;
-            this.animations.stop();
-            this.frame = 0;
+            this.stop();
         }
         // If the up arrow key is pressed and the player is on the ground
-        if (this._cursor.up.isDown || this._wqzd.up.isDown) {
+        if (direction === Direction.Up) {
             // Move the player upward (jump)
-            this._jump();
+            this.jump();
         }
     }
 
-    private _jump() {
+    public jump() {
         if (this.body.touching.down === true) {
             this.body.velocity.y = -200;
             this._jumpingTime = this.game.time.now;
@@ -135,7 +85,17 @@ export default class PlayerBuilder extends Phaser.Sprite {
         this._jumpSound.play();
     }
 
+    public stop(): void {
+        this.body.velocity.x = 0;
+        this.animations.stop();
+        this.frame = 0;
+    }
+
     public playDieSound(): void {
         this._dieSound.play();
+    }
+
+    public getId(): number {
+        return this._id;
     }
 }

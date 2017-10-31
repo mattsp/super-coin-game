@@ -1,7 +1,6 @@
 import 'p2';
 import 'pixi';
 import 'phaser';
-
 import * as Assets from './assets';
 import * as Utils from './utils/utils';
 import * as WebFontLoader from 'webfontloader';
@@ -9,6 +8,7 @@ import * as WebFontLoader from 'webfontloader';
 import Boot from './states/boot';
 import Game from './states/game';
 import Menu from './states/menu';
+import Multiplayer from './states/multiplayer';
 import Preloader from './states/preloader';
 
 class App extends Phaser.Game {
@@ -18,6 +18,7 @@ class App extends Phaser.Game {
         this.state.add('boot', Boot);
         this.state.add('preloader', Preloader);
         this.state.add('menu', Menu);
+        this.state.add('multiplayer', Multiplayer);
         this.state.add('game', Game);
 
         this.state.start('boot');

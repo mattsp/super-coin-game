@@ -117,3 +117,26 @@ export class StringUtils {
         return (camelCase[0].toUpperCase() + camelCase.substr(1));
     }
 }
+
+export class Colorutils {
+    public static getRandomColor(): string {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    public static hexToNumber(hexaColor: string): number {
+        if (hexaColor) {
+            return Number(hexaColor.replace('#', '0x'));
+        }
+    }
+}
+
+export class IDUtils {
+    public static generate(): string {
+        return '_' + Math.random().toString(36).substr(2, 9);
+    }
+}

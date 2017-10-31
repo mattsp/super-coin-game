@@ -22,7 +22,7 @@ export default class Menu extends Phaser.State {
             .easing(Phaser.Easing.Bounce.Out).start();
 
         this._loadBestScore();
-        const scoreText = 'score: ' + this.game['global'].score + '\nbest score: ' +
+        const scoreText = 'score: ' + Math.max(store.scorePlayer1, store.scorePlayer2) + '\nbest score: ' +
             localStorage.getItem('bestScore');
 
         // Show the score at the center of the screen
@@ -32,30 +32,42 @@ export default class Menu extends Phaser.State {
         scoreLabel.anchor.setTo(0.5, 0.5);
         scoreLabel.scale.setTo(1.6, 1.5);
 
-        let startLabelText: string;
-        if (this.game.device.desktop) {
-            startLabelText = 'press the up arrow key to start';
-        }
-        else {
-            startLabelText = 'touch the screen to start';
-        }
 
-        const startLabel = this.game.add.text(this.game.world.width / 2, this.game.world.height - 80,
-            startLabelText,
-            { font: '25px Arial', fill: '#ffffff' });
-        startLabel.anchor.setTo(0.5, 0.5);
-        startLabel.scale.setTo(1.6, 1.5);
+        const newGame = this.game.add.sprite(this.game.world.width / 2, this.game.world.height - 160, Assets.Images.ImagesBtn.getName());
+        newGame.anchor.setTo(0.5, 0.5);
+        newGame.width = 200;
+        newGame.height = 50;
+        newGame.tint = 0.3 * 0xffffff;
+        const newGameLabel = this.game.add.text(this.game.world.width / 2, this.game.world.height - 160,
+            'New Game',
+            { font: '12px Arial', fill: '#ffffff' });
+        newGameLabel.anchor.setTo(0.5, 0.5);
+        newGameLabel.scale.setTo(1.6, 1.5);
 
-        this.game.add.tween(startLabel).to({ angle: -2 }, 500).to({ angle: 2 }, 1000)
+        this.game.add.tween(newGameLabel).to({ angle: -2 }, 500).to({ angle: 2 }, 1000)
             .to({ angle: 0 }, 500).loop().start();
 
-        // Create a new Phaser keyboard variable: the up arrow key
-        // When pressed, call the 'start'
-        const upKey = this.game.input.keyboard.addKey(Phaser.Keyboard.UP);
-        upKey.onDown.add(this._startGame, this);
+        newGame.inputEnabled = true;
+        newGame.events.onInputDown.add(this._startGame, this);
 
-        if (this.game.device.desktop === false) {
-            this.game.input.onDown.add(this._startGame, this);
+        if (this.game.device.desktop === true) {
+            const multiPlayerMode = this.game.add.sprite(this.game.world.width / 2, this.game.world.height - 80, Assets.Images.ImagesBtn.getName());
+            multiPlayerMode.anchor.setTo(0.5, 0.5);
+            multiPlayerMode.width = 200;
+            multiPlayerMode.height = 50;
+            multiPlayerMode.tint = 0.8 * 0xffffff;
+
+            const multiplayerlabel = this.game.add.text(this.game.world.width / 2, this.game.world.height - 80,
+                'Multiplayer',
+                { font: '12px Arial', fill: '#ffffff' });
+            multiplayerlabel.anchor.setTo(0.5, 0.5);
+            multiplayerlabel.scale.setTo(1.6, 1.5);
+
+            this.game.add.tween(multiplayerlabel).to({ angle: -2 }, 500).to({ angle: 2 }, 1000)
+                .to({ angle: 0 }, 500).loop().start();
+
+            multiPlayerMode.inputEnabled = true;
+            multiPlayerMode.events.onInputDown.add(this._startMultiplayer, this);
         }
 
     }
@@ -63,9 +75,10 @@ export default class Menu extends Phaser.State {
     private _loadBestScore(): void {
         if (!localStorage.getItem('bestScore')) {
             localStorage.setItem('bestScore', '0');
-        } else if (store.score > Number(localStorage.getItem('bestScore'))) {
-            localStorage.setItem('bestScore', this.game['global'].score);
-            store.score = 0;
+        } else if (Math.max(store.scorePlayer1, store.scorePlayer2) > Number(localStorage.getItem('bestScore'))) {
+            localStorage.setItem('bestScore', Math.max(store.scorePlayer1, store.scorePlayer2).toString());
+            store.scorePlayer1 = 0;
+            store.scorePlayer2 = 0;
         }
     }
 
@@ -73,11 +86,20 @@ export default class Menu extends Phaser.State {
         this.game.sound.mute = !this.game.sound.mute;
         this._muteButton.frame = this.game.sound.mute ? 1 : 0;
     }
+
     private _startGame(): void {
         if (this.game.device.desktop === false && this.game.input.y < 50 && this.game.input.x < 60) {
             // It means we want to mute the game, so we don't start the game
             return;
         }
-        this.game.state.start('game');
+        this.game.state.start('game', true, false, { isMultiPlayerMode: false });
+    }
+
+    private _startMultiplayer(): void {
+        if (this.game.device.desktop === false && this.game.input.y < 50 && this.game.input.x < 60) {
+            // It means we want to mute the game, so we don't start the game
+            return;
+        }
+        this.game.state.start('multiplayer');
     }
 }

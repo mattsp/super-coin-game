@@ -21,12 +21,6 @@ export default class Boot extends Phaser.State {
             this.game.scale.setUserScale(screenMetrics.scaleX, screenMetrics.scaleY);
         }
 
-        this.game['global'] = {
-            score: 0
-        };
-
-
-
         this.game.renderer.renderSession.roundPixels = true;
         this.game.stage.backgroundColor = '#3498db';
 
