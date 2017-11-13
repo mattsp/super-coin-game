@@ -1,20 +1,10 @@
 import { Direction } from '../enum/Direction';
 
-export default class Player {
-    public latencyTrips;
-    public averageLatency: number;
-    public tickLag: number;
+export class Player {
 
-    constructor(private _x: number, private _y: number, private _direction?: Direction, private _color?: number, private _id?: string) {
-        this.latencyTrips = [];
+    constructor(private _id: string, private _color: number, private _direction?: Direction) {
     }
 
-    public getX(): number {
-        return this._x;
-    }
-    public getY(): number {
-        return this._y;
-    }
     public getID(): string {
         return this._id;
 
@@ -22,13 +12,6 @@ export default class Player {
     public setID(id: string): void {
         this._id = id;
 
-    }
-    public setX(x: number): void {
-        this._x = x;
-    }
-
-    public setY(y: number): void {
-        this._y = y;
     }
 
     public setDirection(direction: Direction): void {
@@ -38,10 +21,6 @@ export default class Player {
 
     public getDirection(): Direction {
         return this._direction;
-    }
-
-    public setColor(color: number): void {
-        this._color = color;
     }
 
     public getColor(): number {

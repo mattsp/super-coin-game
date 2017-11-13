@@ -24,8 +24,8 @@ export default class Boot extends Phaser.State {
 
         this.game.renderer.renderSession.roundPixels = true;
         this.game.stage.backgroundColor = '#3498db';
-        // this.game.time.advancedTiming = true;
-        // this.game.time.desiredFps = 60;
+        this.game.time.advancedTiming = true;
+        this.game.time.desiredFps = 30;
         this.stage.disableVisibilityChange = true;
         this.game.scale.pageAlignHorizontally = true;
         this.game.scale.pageAlignVertically = true;

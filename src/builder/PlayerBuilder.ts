@@ -11,17 +11,16 @@ export default class PlayerBuilder extends Phaser.Sprite {
     private _rightButton: Phaser.Sprite;
     private _moveLeft: boolean;
     private _moveRight: boolean;
+    private _moveJump: boolean;
     private _jumping: boolean = false;
     private _jumpingTime: number = 0;
     private _id: string;
     private _deltaTime: number;
-    private _isRemote: boolean = false;
     private _direction: Direction;
     private _directionChange: boolean;
 
-    constructor(game: Phaser.Game, x: number, y: number, color?: number, id?: string, isRemote?: boolean) {
+    constructor(game: Phaser.Game, x: number, y: number, color?: number, id?: string) {
         super(game, x, y, Assets.Spritesheets.SpritesheetsPlayer20205.getName(), 0);
-        this._isRemote = isRemote;
         if (color)
             this.tint = color;
         this._id = id;
@@ -41,7 +40,7 @@ export default class PlayerBuilder extends Phaser.Sprite {
         this._dieSound = this.game.add.audio(Assets.Audio.AudioDead.getName());
         this.animations.add(Direction.Right, [1, 2], 8, true);
         this.animations.add(Direction.Left, [3, 4], 8, true);
-        if (this.game.device.desktop === false && this._isRemote === undefined) {
+        if (this.game.device.desktop === false) {
             this._addMobileInputs();
         }
         game.add.existing(this);
@@ -63,7 +62,7 @@ export default class PlayerBuilder extends Phaser.Sprite {
         this._rightButton.alpha = 0.5;
         this._rightButton.scale.setTo(1.6, 1.5);
 
-        this._jumpButton.events.onInputDown.add(this._jump, this);
+        this._jumpButton.events.onInputDown.add(this._setJumpTrue, this);
 
         this._moveLeft = false;
         this._moveRight = false;
@@ -83,15 +82,21 @@ export default class PlayerBuilder extends Phaser.Sprite {
 
     private _setLeftTrue(): void {
         this._moveLeft = true;
+        this._moveJump = false;
     }
     private _setLeftFalse(): void {
         this._moveLeft = false;
     }
     private _setRightTrue(): void {
         this._moveRight = true;
+        this._moveJump = false;
     }
     private _setRightFalse(): void {
         this._moveRight = false;
+    }
+
+    private _setJumpTrue(): void {
+        this._moveJump = true;
     }
 
     public scalePlayer(): void {
@@ -99,67 +104,69 @@ export default class PlayerBuilder extends Phaser.Sprite {
             .yoyo(true).start();
     }
 
-    public move(x?: number, y?: number, direction?: Direction, callback?: Function, deltaTime?: number): void {
+    public askMoveAction(callback?: Function, deltaTime?: number) {
         this._deltaTime = deltaTime;
-        if (this._direction !== direction) {
-            this._directionChange = true;
-        }
         if (this.game.input.totalActivePointers === 0) {
             this._moveLeft = false;
             this._moveRight = false;
         }
         // If the left arrow key is pressed
         if (this._cursor.left.isDown === true || this._wqzd.left.isDown === true || this._moveLeft === true) {
-            // Move the player to the left
-            // The velocity is in pixels per second
-            this.body.velocity.x = -200 * this._deltaTime;
-            this.animations.play(Direction.Left);
-            if (callback && this._directionChange === true) {
-                this._directionChange = false;
+            if (callback) {
                 callback(Direction.Left);
             }
         }
         // If the right arrow key is pressed
         else if (this._cursor.right.isDown === true || this._wqzd.right.isDown === true || this._moveRight === true) {
-            // Move the player to the right
-            this.body.velocity.x = 200 * this._deltaTime;
-            this.animations.play(Direction.Right);
-            if (callback && this._directionChange === true) {
-                this._directionChange = false;
+            if (callback) {
                 callback(Direction.Right);
             }
         }
+        // If the up arrow key is pressed and the player is on the ground
         // If neither the right or left arrow key is pressed
         else {
-            if (x || y && direction && this._directionChange === true) {
-                this._directionChange = false;
-                this.game.physics.arcade.moveToXY(this, x, y, 200 * this._deltaTime);
-                this.animations.play(direction);
-            } else {
-                // Stop the player
-                this.body.velocity.x = 0;
-                this.animations.stop();
-                this.frame = 0;
-                if (callback && this._directionChange === true) {
-                    this._directionChange = false;
-                    callback();
-                }
+            if (callback) {
+                callback();
             }
         }
-        // If the up arrow key is pressed and the player is on the ground
-        if (this._cursor.up.isDown || this._wqzd.up.isDown) {
-            // Move the player upward (jump)
-            this._jump();
-            if (callback && this._directionChange === true) {
-                this._directionChange = false;
-                callback('up');
+        if (this._cursor.up.isDown || this._wqzd.up.isDown || this._moveJump) {
+            if (callback) {
+                callback(Direction.Up);
             }
         }
-        console.log('position', this.x, this.y);
     }
 
-    public stop(x?: number, y?: number) {
-        this.game.physics.arcade.moveToXY(this, x, y, 200 * this._deltaTime);
+    public sentMoveAction(direction?: Direction, deltaTime?: number) {
+        this._deltaTime = deltaTime;
+
+        // If the left arrow key is pressed
+        if (direction === Direction.Left) {
+            // Move the player to the left
+            // The velocity is in pixels per second
+            this.body.velocity.x = -200 * this._deltaTime;
+            this.animations.play(Direction.Left);
+        }
+        // If the right arrow key is pressed
+        else if (direction === Direction.Right) {
+            // Move the player to the right
+            this.body.velocity.x = 200 * this._deltaTime;
+            this.animations.play(Direction.Right);
+        }
+        // If the up arrow key is pressed and the player is on the ground
+        else if (direction === Direction.Up) {
+            // Move the player upward (jump)
+            this._jump();
+        }
+        // If neither the right or left arrow key is pressed
+        else {
+            // Stop the player
+            this.body.velocity.x = 0;
+            this.animations.stop();
+            this.frame = 0;
+        }
+    }
+
+    public stop() {
         this.body.velocity.x = 0;
         this.animations.stop();
         this.frame = 0;
@@ -174,6 +181,7 @@ export default class PlayerBuilder extends Phaser.Sprite {
             this.body.velocity.y = -200 * this._deltaTime;
             this._jumping = false;
         }
+        this._moveJump = false;
         this._jumpSound.play();
     }
 

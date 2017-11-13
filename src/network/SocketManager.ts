@@ -1,7 +1,7 @@
 import { multiplayer } from './Multiplayer';
 import * as io from 'socket.io-client';
 
-import Player from '../model/player';
+import { Player } from '../model/player';
 import { store } from '../store';
 import { playerService } from '../services/PlayerService';
 import { Event } from '../enum/PlayerEvent';
@@ -54,7 +54,7 @@ export default class SocketManager {
         console.log('Connected to socket server');
 
         // Send local player data to the game server
-        this._socket.emit(Event.NewPlayer, { x: store.localPlayer.getX(), y: store.localPlayer.getY(), color: store.localPlayer.getColor() });
+        this._socket.emit(Event.NewPlayer, { color: Math.random() * 0xffffff });
         if (callback)
             callback();
     }
@@ -69,27 +69,21 @@ export default class SocketManager {
         console.log('New player connected: ' + data.id);
 
         // Initialise the new player
-        const newPlayer = new Player(data.x, data.y);
-        newPlayer.setID(data.id);
-        newPlayer.setColor(data.color);
+        const newPlayer = new Player(data.id, data.color);
         // Add new player to the remote players array
-        store.remotePlayers.set(newPlayer.getID(), newPlayer);
+        store.players.set(newPlayer.getID(), newPlayer);
         if (callback)
             callback(newPlayer);
     }
 
     private _onMovePlayer(data, callback: Function): void {
-        const movePlayer = playerService.getFromStoreById(data.id);
+        const movePlayer = store.players.get(data.id);
 
         // Player not found
         if (!movePlayer) {
             console.log('Player not found: ' + data.id);
             return;
         }
-
-        // Update player position
-        movePlayer.setX(data.x);
-        movePlayer.setY(data.y);
         movePlayer.setDirection(data.direction);
         if (callback)
             callback(movePlayer);
@@ -104,9 +98,6 @@ export default class SocketManager {
             return;
         }
 
-        // Update player position
-        movePlayer.setX(data.x);
-        movePlayer.setY(data.y);
         if (callback)
             callback(movePlayer);
     }
@@ -124,7 +115,7 @@ export default class SocketManager {
             callback(removePlayer);
 
         // Remove player from array
-        store.remotePlayers.delete(removePlayer.getID());
+        store.players.delete(removePlayer.getID());
     }
 
     private _onLatencyPingPlayer(data): void {

@@ -1,25 +1,24 @@
 import { store } from '../store';
-import Player from '../model/player';
+import { Player } from '../model/player';
 import PlayerBuilder from '../builder/PlayerBuilder';
 
 class PlayerService {
-    private remotePlayers: Map<string, PlayerBuilder>;
-    private localePlayer: PlayerBuilder;
+    private players: Map<string, PlayerBuilder>;
 
     constructor() {
-        this.remotePlayers = new Map<string, PlayerBuilder>();
+        this.players = new Map<string, PlayerBuilder>();
     }
 
     public getFromStoreById(id: string): Player {
-        return store.remotePlayers.get(id);
+        return store.players.get(id);
     }
 
     public getAll(): IterableIterator<PlayerBuilder> {
-        return this.remotePlayers.values();
+        return this.players.values();
     }
 
     public getById(id: string, callback: (player: PlayerBuilder) => void) {
-        const player = this.remotePlayers.get(id);
+        const player = this.players.get(id);
         if (player) {
             callback(player);
         } else {
@@ -28,13 +27,13 @@ class PlayerService {
     }
 
     public delete(id: string): PlayerBuilder {
-        const playerRemoved = this.remotePlayers.get(id);
-        this.remotePlayers.delete(id);
+        const playerRemoved = this.players.get(id);
+        this.players.delete(id);
         return playerRemoved;
     }
 
     public save(player: PlayerBuilder): void {
-        this.remotePlayers.set(player.getID(), player);
+        this.players.set(player.getID(), player);
     }
 }
 
