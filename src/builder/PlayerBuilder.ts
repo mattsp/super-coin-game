@@ -129,7 +129,7 @@ export default class PlayerBuilder extends Phaser.Sprite {
                 callback();
             }
         }
-        if (this._cursor.up.isDown || this._wqzd.up.isDown || this._moveJump) {
+        if (this._cursor.up.isDown || this._wqzd.up.isDown || this._moveJump === true) {
             if (callback) {
                 callback(Direction.Up);
             }
