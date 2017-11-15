@@ -1,7 +1,6 @@
-import { multiplayer } from './Multiplayer';
 import * as io from 'socket.io-client';
 
-import { Player } from '../model/player';
+import { Player } from '../model/Player';
 import { store } from '../store';
 import { playerService } from '../services/PlayerService';
 import { Event } from '../enum/PlayerEvent';
@@ -43,10 +42,6 @@ export default class SocketManager {
         this._socket.on(Event.StopPlayer, (client) => { this._onStopPlayer(client, options.onStopPlayer); });
         // Player removed message received
         this._socket.on(Event.RemovePlayer, (client) => { this._onRemovePlayer(client, options.onRemovePlayer); });
-        // Player latency ping received
-        this._socket.on(Event.LatencyPing, (client) => { this._onLatencyPingPlayer(client); });
-        // Player game tick received
-        this._socket.on(Event.GameTick, (client) => { this._onGameTickPlayer(client); });
 
     }
 
@@ -70,27 +65,28 @@ export default class SocketManager {
 
         // Initialise the new player
         const newPlayer = new Player(data.id, data.color);
-        // Add new player to the remote players array
-        store.players.set(newPlayer.getID(), newPlayer);
+
         if (callback)
             callback(newPlayer);
     }
 
     private _onMovePlayer(data, callback: Function): void {
-        const movePlayer = store.players.get(data.id);
+        const movePlayer = playerService.getById(data.id);
 
         // Player not found
         if (!movePlayer) {
             console.log('Player not found: ' + data.id);
             return;
         }
-        movePlayer.setDirection(data.direction);
+
+        movePlayer.direction = data.direction;
+
         if (callback)
-            callback(movePlayer);
+            callback(movePlayer.toModel());
     }
 
     private _onStopPlayer(data, callback: Function): void {
-        const movePlayer = playerService.getFromStoreById(data.id);
+        const movePlayer = playerService.getById(data.id);
 
         // Player not found
         if (!movePlayer) {
@@ -99,11 +95,11 @@ export default class SocketManager {
         }
 
         if (callback)
-            callback(movePlayer);
+            callback(movePlayer.toModel());
     }
 
     private _onRemovePlayer(data, callback: Function): void {
-        const removePlayer = playerService.getFromStoreById(data.id);
+        const removePlayer = playerService.getById(data.id);
 
         // Player not found
         if (!removePlayer) {
@@ -112,18 +108,6 @@ export default class SocketManager {
         }
 
         if (callback)
-            callback(removePlayer);
-
-        // Remove player from array
-        store.players.delete(removePlayer.getID());
-    }
-
-    private _onLatencyPingPlayer(data): void {
-        this._socket.emit(Event.LatencyPong, data);
-    }
-
-    private _onGameTickPlayer(data): void {
-        multiplayer.lastReceivedTick = data.tick;
-        multiplayer.commands[data.tick] = data.commands;
+            callback(removePlayer.toModel());
     }
 }

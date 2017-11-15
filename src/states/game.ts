@@ -1,4 +1,3 @@
-import { multiplayer } from './../network/Multiplayer';
 import { playerService } from './../services/PlayerService';
 import * as Assets from '../assets';
 import { Direction } from '../enum/Direction';
@@ -81,15 +80,17 @@ export default class Game extends Phaser.State {
     }
 
     private _stopRemotePlayer(remotePlayer: Player): void {
-        playerService.getById(remotePlayer.getID(), (player) => {
+        const player = playerService.getById(remotePlayer.getID());
+        if (player) {
             player.stop();
-        });
+        }
     }
 
     private _updateRemotePlayer(remotePlayer: Player): void {
-        playerService.getById(remotePlayer.getID(), (player) => {
+        const player = playerService.getById(remotePlayer.getID());
+        if (player) {
             player.sentMoveAction(remotePlayer.getDirection(), this._deltaTime);
-        });
+        }
     }
 
     private _checkMoveDirection(direction: Direction): void {

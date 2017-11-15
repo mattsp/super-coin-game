@@ -1,5 +1,5 @@
 import { store } from '../store';
-import { Player } from '../model/player';
+import { Player } from '../model/Player';
 import PlayerBuilder from '../builder/PlayerBuilder';
 
 class PlayerService {
@@ -9,21 +9,16 @@ class PlayerService {
         this.players = new Map<string, PlayerBuilder>();
     }
 
-    public getFromStoreById(id: string): Player {
-        return store.players.get(id);
-    }
-
     public getAll(): IterableIterator<PlayerBuilder> {
         return this.players.values();
     }
 
-    public getById(id: string, callback: (player: PlayerBuilder) => void) {
+    public getById(id: string): PlayerBuilder {
         const player = this.players.get(id);
-        if (player) {
-            callback(player);
-        } else {
-            console.log('player', id, 'not found');
+        if (!player) {
+            console.log(`player ${id} not found`);
         }
+        return player;
     }
 
     public delete(id: string): PlayerBuilder {

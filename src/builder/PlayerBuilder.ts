@@ -1,3 +1,4 @@
+import { Player } from './../model/Player';
 import * as Assets from '../assets';
 import { Direction } from '../enum/Direction';
 
@@ -17,7 +18,6 @@ export default class PlayerBuilder extends Phaser.Sprite {
     private _id: string;
     private _deltaTime: number;
     private _direction: Direction;
-    private _directionChange: boolean;
 
     constructor(game: Phaser.Game, x: number, y: number, color?: number, id?: string) {
         super(game, x, y, Assets.Spritesheets.SpritesheetsPlayer20205.getName(), 0);
@@ -160,9 +160,7 @@ export default class PlayerBuilder extends Phaser.Sprite {
         // If neither the right or left arrow key is pressed
         else {
             // Stop the player
-            this.body.velocity.x = 0;
-            this.animations.stop();
-            this.frame = 0;
+            this.stop();
         }
     }
 
@@ -191,5 +189,13 @@ export default class PlayerBuilder extends Phaser.Sprite {
 
     public getID(): string {
         return this._id;
+    }
+
+    public set direction(direction: Direction) {
+        this._direction = direction;
+    }
+
+    public toModel(): Player {
+        return new Player(this._id, this.tint, this._direction);
     }
 }

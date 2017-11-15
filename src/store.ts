@@ -1,11 +1,9 @@
-import { Player } from './model/player';
+import { Player } from './model/Player';
 
 class Store {
     public score: number = 0;
-    public players: Map<string, Player>;
     public deltaTime: number;
     constructor() {
-        this.players = new Map<string, Player>();
     }
 }
 

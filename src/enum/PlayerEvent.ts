@@ -4,9 +4,6 @@ export enum Event {
     NewPlayer = 'new_player',
     MovePlayer = 'move_player',
     StopPlayer = 'stop_player',
-    RemovePlayer = 'remove_player',
-    LatencyPing = 'latency_ping',
-    LatencyPong = 'latency_pong',
-    GameTick = 'game_tick'
+    RemovePlayer = 'remove_player'
 
 }
