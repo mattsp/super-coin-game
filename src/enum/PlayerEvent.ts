@@ -1,9 +1,8 @@
-export enum Event {
+export enum PlayerEvent {
     Connect = 'connect',
     Disconnect = 'disconnect',
-    NewPlayer = 'new_player',
-    MovePlayer = 'move_player',
-    StopPlayer = 'stop_player',
-    RemovePlayer = 'remove_player'
-
+    New = 'player_new',
+    Move = 'player_move',
+    Stop = 'player_stop',
+    Remove = 'player_remove'
 }

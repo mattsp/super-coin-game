@@ -13,7 +13,8 @@ import { ScreenMetrics } from './../utils/utils';
 import SocketManager from '../network/SocketManager';
 import WolrdBuilder from '../builder/WorldBuilder';
 import { store } from './../store';
-import { Event } from '../enum/PlayerEvent';
+import { PlayerEvent } from '../enum/PlayerEvent';
+import { EnemyEvent } from '../enum/EnemyEvent';
 
 export default class Game extends Phaser.State {
 
@@ -26,7 +27,6 @@ export default class Game extends Phaser.State {
     private _backgroundSound: Phaser.Sound;
     private readonly MAX_LIVE = 3;
     private _socket: SocketManager;
-    private _deltaTime = 0;
 
     public create(): void {
         this._socket = new SocketManager();
@@ -34,14 +34,16 @@ export default class Game extends Phaser.State {
             onNewPLayer: this._addPlayer.bind(this),
             onMovePlayer: this._updateRemotePlayer.bind(this),
             onStopPlayer: this._stopRemotePlayer.bind(this),
-            onRemovePlayer: this._removeRemotePlayer.bind(this)
+            onRemovePlayer: this._removeRemotePlayer.bind(this),
+            onRespawnEnemy: this._respawnRemoteEnemy.bind(this),
+            onMoveEnemy: this._moveRemoteEnemy.bind(this)
         });
         this._walls = new WolrdBuilder(this.game);
         this._walls.createWorld();
         this._coin = new CoinBuilder(this.game, 96, 210);
         this._score = new ScoreBuilder(this.game, 48, 45);
         this._liveBuilder = new LiveBuilder(this.game, this.game.world.width - 84, 45, this.MAX_LIVE);
-        // this._enemies = new EnemeiesBuilder(this.game);
+        this._enemies = new EnemeiesBuilder(this.game, this._enemyRespawn.bind(this), this._enemyMove.bind(this));
         this._enemyParticule = new ParticuleBuilder(this.game, 0, 0, 15);
         this._backgroundSound = this.game.add.sound(Assets.Audio.AudioBackgrounSound.getName());
         this._backgroundSound.loop = true;
@@ -49,34 +51,49 @@ export default class Game extends Phaser.State {
     }
 
     public update(): void {
-        // this._enemies.update();
-        this._deltaTime = (this.game.time.elapsedMS * this.time.fps) / 1000;
+        this._enemies.update();
         for (let player of playerService.getAll()) {
 
             this.game.physics.arcade.collide(player, this._walls);
             this.physics.arcade.overlap(player, this._coin, this._takeCoin, null, this);
             this.game.physics.arcade.collide(this._enemies, this._walls);
-            this.game.physics.arcade.overlap(player, this._enemies, this._playerDie,
-                null, this);
+            // this.game.physics.arcade.overlap(player, this._enemies, this._playerDie,
+            //     null, this);
 
             if (player.alive === false) {
                 return;
             }
 
-            player.askMoveAction(this._checkMoveDirection.bind(this));
+            player.askMoveAction(this._checkMoveDirection.bind(this), (this.game.time.elapsedMS * this.time.fps) / 1000);
 
             if (player.inWorld === false) {
-                this._playerDie();
+                this._playerDie(player, this._enemies);
             }
         }
     }
 
+    private _enemyRespawn(index: number): void {
+        this._socket.emit(EnemyEvent.Respawn, { index });
+    }
+
+    private _enemyMove(index: number, direction: Direction): void {
+        this._socket.emit(EnemyEvent.Move, { index, direction });
+    }
+
     private _localPlayerMove(direction: Direction): void {
-        this._socket.emit(Event.MovePlayer, { direction });
+        this._socket.emit(PlayerEvent.Move, { direction });
     }
 
     private _localPlayerStop(direction: Direction): void {
-        this._socket.emit(Event.StopPlayer, { direction });
+        this._socket.emit(PlayerEvent.Stop, { direction });
+    }
+
+    private _respawnRemoteEnemy(index: number) {
+        this._enemies.sentRewpawnEnemy(index, (this.game.time.elapsedMS * this.time.fps) / 1000);
+    }
+
+    private _moveRemoteEnemy(index: number, direction: Direction) {
+        this._enemies.sentMoveAction(index, direction, (this.game.time.elapsedMS * this.time.fps) / 1000);
     }
 
     private _stopRemotePlayer(remotePlayer: Player): void {
@@ -89,7 +106,7 @@ export default class Game extends Phaser.State {
     private _updateRemotePlayer(remotePlayer: Player): void {
         const player = playerService.getById(remotePlayer.getID());
         if (player) {
-            player.sentMoveAction(remotePlayer.getDirection(), this._deltaTime);
+            player.sentMoveAction(remotePlayer.getDirection(), (this.game.time.elapsedMS * this.time.fps) / 1000);
         }
     }
 
@@ -111,7 +128,7 @@ export default class Game extends Phaser.State {
         playerService.save(newPlayer);
     }
 
-    private _playerDie(player?: PlayerBuilder, enemies?: Phaser.Group): void {
+    private _playerDie(player: PlayerBuilder, enemies: Phaser.Group): void {
         this._enemyParticule.x = player.x;
         this._enemyParticule.y = player.y;
         this._enemyParticule.start(true, 800, null, 15);
