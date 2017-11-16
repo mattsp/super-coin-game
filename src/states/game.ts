@@ -15,6 +15,7 @@ import WolrdBuilder from '../builder/WorldBuilder';
 import { store } from './../store';
 import { PlayerEvent } from '../enum/PlayerEvent';
 import { EnemyEvent } from '../enum/EnemyEvent';
+import { CoinEvent } from '../enum/CoinEvent';
 
 export default class Game extends Phaser.State {
 
@@ -36,11 +37,12 @@ export default class Game extends Phaser.State {
             onStopPlayer: this._stopRemotePlayer.bind(this),
             onRemovePlayer: this._removeRemotePlayer.bind(this),
             onRespawnEnemy: this._respawnRemoteEnemy.bind(this),
-            onMoveEnemy: this._moveRemoteEnemy.bind(this)
+            onMoveEnemy: this._moveRemoteEnemy.bind(this),
+            onRespawnCoin: this._respawnCoin.bind(this)
         });
         this._walls = new WolrdBuilder(this.game);
         this._walls.createWorld();
-        this._coin = new CoinBuilder(this.game, 96, 210);
+        this._coin = new CoinBuilder(this.game, 96, 210, this._coinRespawn.bind(this));
         this._score = new ScoreBuilder(this.game, 48, 45);
         this._liveBuilder = new LiveBuilder(this.game, this.game.world.width - 84, 45, this.MAX_LIVE);
         this._enemies = new EnemeiesBuilder(this.game, this._enemyRespawn.bind(this), this._enemyMove.bind(this));
@@ -80,6 +82,10 @@ export default class Game extends Phaser.State {
         this._socket.emit(EnemyEvent.Move, { index, direction });
     }
 
+    private _coinRespawn(newPosition: number): void {
+        this._socket.emit(CoinEvent.Respawn, { newPosition });
+    }
+
     private _localPlayerMove(direction: Direction): void {
         this._socket.emit(PlayerEvent.Move, { direction });
     }
@@ -94,6 +100,10 @@ export default class Game extends Phaser.State {
 
     private _moveRemoteEnemy(index: number, direction: Direction) {
         this._enemies.sentMoveAction(index, direction, (this.game.time.elapsedMS * this.time.fps) / 1000);
+    }
+
+    private _respawnCoin(newPosition: Array<number>) {
+        this._coin.updatePosition(newPosition);
     }
 
     private _stopRemotePlayer(remotePlayer: Player): void {
@@ -157,7 +167,7 @@ export default class Game extends Phaser.State {
         this._coin.kill();
         this._coin.playSound();
         this._score.add(5);
-        this._coin.updatePosition();
+        this._coin.askUpdatePosition();
         player.scalePlayer();
 
     }

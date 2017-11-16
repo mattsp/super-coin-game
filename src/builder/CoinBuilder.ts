@@ -3,7 +3,7 @@ import * as Assets from '../assets';
 export default class CoinBuilder extends Phaser.Sprite {
 
     private _coinSound: Phaser.Sound;
-    constructor(game: Phaser.Game, x: number, y: number) {
+    constructor(game: Phaser.Game, x: number, y: number, private _askUpdatePosition: Function) {
         super(game, x, y, Assets.Images.ImagesCoin.getName(), 0);
         game.physics.arcade.enable(this);
         this.anchor.setTo(0.5);
@@ -17,8 +17,7 @@ export default class CoinBuilder extends Phaser.Sprite {
         this.game.add.tween(this.scale).to({ x: 1, y: 1 }, 300).start();
     }
 
-    public updatePosition(): void {
-
+    public askUpdatePosition(): void {
         const coinPosition = [
             { x: 224, y: 90 }, { x: 576, y: 90 }, // Top row
             { x: 96, y: 210 }, { x: 704, y: 210 }, // Middle row
@@ -31,6 +30,11 @@ export default class CoinBuilder extends Phaser.Sprite {
             }
         }
         const newPosition = this.game.rnd.pick(coinPosition);
+        this._askUpdatePosition(newPosition);
+    }
+
+    public updatePosition(newPosition): void {
+
         this._scaleCoin();
         this.reset(newPosition.x, newPosition.y);
 

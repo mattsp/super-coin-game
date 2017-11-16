@@ -11,7 +11,7 @@ export default class EnemiesBuilder extends Phaser.Group {
     private readonly END_TIME_FREQ = 1000;
     private readonly SCORE_PROGRESSION = 100;
     private _deltaTime: number;
-    constructor(game: Phaser.Game, private _askRespawnEnemyCbk: Function, private _askMoveEnemyCbk: Function) {
+    constructor(game: Phaser.Game, private _askRespawnEnemyCbk: (index: number) => {}, private _askMoveEnemyCbk: (index: number, direction: Direction) => {}) {
         super(game);
         this.enableBody = true;
         this.createMultiple(10, Assets.Images.ImagesEnemy.getName());

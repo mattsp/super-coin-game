@@ -1,3 +1,4 @@
+import { CoinEvent } from './../enum/CoinEvent';
 import { EnemyEvent } from './../enum/EnemyEvent';
 import * as io from 'socket.io-client';
 
@@ -16,6 +17,7 @@ interface ISocketGameEvent {
     onRemovePlayer?: (player: Player) => {};
     onRespawnEnemy?: (index: number) => {};
     onMoveEnemy?: (index: number, direction: Direction) => {};
+    onRespawnCoin?: () => {};
 }
 export default class SocketManager {
     private _socket: SocketIOClient.Socket;
@@ -50,7 +52,8 @@ export default class SocketManager {
         this._socket.on(EnemyEvent.Move, (client) => { this._onMoveEnemy(client, options.onMoveEnemy); });
         // Enemy respawn message received
         this._socket.on(EnemyEvent.Respawn, (client) => { this._onRespawnEnemy(client, options.onRespawnEnemy); });
-
+        // Coin respawn message received
+        this._socket.on(CoinEvent.Respawn, (client) => { this._onRespawnCoin(client, options.onRespawnCoin); });
     }
 
     private _onSocketConnected(client, callback: Function): void {
@@ -127,5 +130,10 @@ export default class SocketManager {
     private _onRespawnEnemy(data, callback: (index: number) => {}): void {
         if (callback)
             callback(data.index);
+    }
+
+    private _onRespawnCoin(data, callback: (newPosition: Array<number>) => {}) {
+        if (callback)
+            callback(data.newPosition);
     }
 }
